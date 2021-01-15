@@ -6,33 +6,44 @@ import ujson
 
 class OutputProcessor:
     def __init__(self, output_file_path: str):
-        logging.debug(f"{self.__class__.__name__}.__init__(output_file_path={output_file_path})")
+        logging.debug(
+            "%s.__init__(output_file_path=%s)",
+            self.__class__.__name__,
+            output_file_path,
+        )
         self._output_file_path: str = output_file_path
         self._json_results_file = None
         self._results_records_count: int = 0
 
     def initialize(self) -> None:
-        logging.debug(f"{self.__class__.__name__}.open()")
+        logging.debug("%s.open()", self.__class__.__name__)
         self._json_results_file = open(self._output_file_path, "w")
         self._json_results_file.write(f"[{os.linesep}")
 
     def close(self) -> None:
-        logging.debug(f"{self.__class__.__name__}.close()")
+        logging.debug("%s.close()", self.__class__.__name__)
         if self._json_results_file is not None:
             self._json_results_file.write(f"{os.linesep}]{os.linesep}")
-            logging.info(f"In total, there were written '{self._results_records_count}' records to the "
-                         f"results document")
+            logging.info(
+                "In total, there were written '%s' records to the results document",
+                self._results_records_count,
+            )
 
-            logging.info(f"You can find a JSON file with the operation results in: '{self._output_file_path}'")
+            logging.info(
+                "You can find a JSON file with the operation results in: '%s'",
+                self._output_file_path,
+            )
             self._json_results_file.close()
 
-    def persist_record(self, record: typing.Dict[str, typing.Union[str, typing.List[float]]]) -> None:
+    def persist_record(
+        self, record: typing.Dict[str, typing.Union[str, typing.List[float]]]
+    ) -> None:
         """
         Appends a new record to the JSON results file.
         :param record:
             dict:
-                Contains for a combination of 'BeaconId' and 'timestamp', the list of associated
-                'dbm_ant'. Example:
+                Contains for a combination of 'BeaconId' and 'timestamp', the list of
+                associated 'dbm_ant'. Example:
 
                   {
                     "beacon": "101, 1999-06-17T00:11:00.000Z",
@@ -49,10 +60,13 @@ class OutputProcessor:
         :return:
         """
 
-        logging.debug(f"{self.__class__.__name__}.persist_record(record={record})")
+        logging.debug("%s.persist_record(record=%s)", self.__class__.__name__, record)
         if self._results_records_count > 0:
             self._json_results_file.write(f",{os.linesep}")
 
         ujson.dump(record, self._json_results_file, indent=4)
         self._results_records_count += 1
-        logging.info(f"Record {self._results_records_count} was successfully append to the JSON Results file.")
+        logging.info(
+            "Record %s was successfully append to the JSON Results file.",
+            self._results_records_count,
+        )
