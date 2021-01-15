@@ -27,9 +27,9 @@ def main() -> None:
     with HDF5Storage(input_file_path,
                      output_processor,
                      constants.DEFAULT_DBM_ANT_VALUE,
-                     constants.ANTENNA_IDS) as main_object:
-        main_object.parse_json_documents_from_file()
-        main_object.persist_beacons_vectors_to_results_file()
+                     constants.ANTENNA_IDS) as hdf5_storage:
+        hdf5_storage.parse_json_documents_from_file()
+        hdf5_storage.persist_beacons_vectors_to_results_file()
 
 
 if __name__ == "__main__":
