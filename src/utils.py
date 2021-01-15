@@ -13,17 +13,15 @@ def init_argparse() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "input_file_path",
-        metavar="input_file_path",
+        metavar="INPUT_FILE_PATH",
         type=str,
         help="the path to the input JSON file",
     )
 
     parser.add_argument(
-        "-o",
-        "--output-directory",
+        "output_directory",
+        metavar="OUTPUT_DIRECTORY",
         type=str,
-        action="store",
-        default=os.path.dirname(os.path.realpath(__file__)),
         help="the directory's path where the output JSON file with the results should "
         "be created",
     )
