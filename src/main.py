@@ -2,13 +2,24 @@ import logging
 import os
 import sys
 
-import constants
-from hdf5_storage import HDF5Storage
-from output_processor import OutputProcessor
-import utils
+from src import constants
+from src.hdf5_storage import HDF5Storage
+from src.output_processor import OutputProcessor
+from src import utils
 
 
 def main() -> None:
+    if constants.LOG_LEVEL == logging.DEBUG:
+        logging.basicConfig(
+            format=constants.DEBUG_MESSAGE_FORMAT,
+            level=constants.LOG_LEVEL,
+            datefmt=constants.DATE_FORMAT,
+        )
+    else:
+        logging.basicConfig(
+            format=constants.INFO_MESSAGE_FORMAT, level=constants.LOG_LEVEL
+        )
+
     logging.debug("main()")
     parser = utils.init_argparse()
     args = parser.parse_args()
@@ -38,15 +49,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if constants.LOG_LEVEL == logging.DEBUG:
-        logging.basicConfig(
-            format=constants.DEBUG_MESSAGE_FORMAT,
-            level=constants.LOG_LEVEL,
-            datefmt=constants.DATE_FORMAT,
-        )
-    else:
-        logging.basicConfig(
-            format=constants.INFO_MESSAGE_FORMAT, level=constants.LOG_LEVEL
-        )
-
     main()

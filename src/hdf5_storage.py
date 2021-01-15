@@ -7,8 +7,8 @@ import typing
 import h5py
 import pydantic
 
-from models import JSONDocumentModel
-from output_processor import OutputProcessor
+from src.models import JSONDocumentModel
+from src.output_processor import OutputProcessor
 
 
 class HDF5Storage:
@@ -73,7 +73,7 @@ class HDF5Storage:
     def __init__(
         self,
         input_json_file_path: str,
-        output_processor: OutputProcessor,
+        out_processor: OutputProcessor,
         default_dbm_ant_value: int,
         expected_antenna_ids: typing.List[int],
     ):
@@ -87,7 +87,7 @@ class HDF5Storage:
         )
 
         self._input_json_file_path: str = input_json_file_path
-        self._output_processor: OutputProcessor = output_processor
+        self._output_processor: OutputProcessor = out_processor
         self._default_dbm_ant_value: float = default_dbm_ant_value
         self._expected_antenna_ids: typing.List[int] = expected_antenna_ids
 
@@ -450,9 +450,8 @@ class HDF5Storage:
                 # the '}' character, at the end
                 # of the line:
                 line = line[: close_brace_idx + 1]
-                json_document: typing.Optional[
-                    JSONDocumentModel
-                ] = self.parse_text_line(line, line_index)
+                json_document: typing.Optional[JSONDocumentModel] = \
+                    self.parse_text_line(line, line_index)
                 line_index += 1
                 if json_document is None:
                     # Line doesn't contains a valid JSON document:
