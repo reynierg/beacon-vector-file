@@ -133,29 +133,33 @@ format that supports large, complex, heterogeneous data.
 
 To install the required dependencies:
 
-1. In a terminal, move with 'cd' command to the folder named as "beacon-vector-file"
-2. Create a virtual environment with Python >= 3.6 using the following command:\
+Clone the project executing the following command in a terminal:\
+`git clone https://github.com/reynierg/beacon-vector-file.git`
+
+Move to the project's directory "beacon-vector-file":\
+`cd beacon-vector-file`
+
+Create a virtual environment with Python >= 3.6:\
 `python3 -m venv venv`
   
-3. Activate the created virtual environment:\
-`. /venv/bin/activate`  
+Activate the created virtual environment:\
+`. venv/bin/activate`  
 
-4. Install packages dependencies:  
+Install the project's dependencies:  
 `pip install -r requirements.txt`
 
 # RUN
 In the same terminal where were executed the previous commands, execute the following:\
-`python main.py [OPTIONS] INPUT_FILE_PATH`
+`python bin/extract_beacons_vectors.py [OPTIONS] <INPUT_FILE_PATH> <OUTPUT_DIRECTORY>`
 
 # OPTIONS
-    -h, --help                  Print this help text and exit
-    -o, --output-directory      The directory's path where the output JSON file 'results.json' with the results should be created
+    -h, --help                  show this help text and exit
 
 # EXAMPLES
-Process the `input.json` file that is in the current directory, and write the output to a new file named `results.json` in the same directory:\
-`python main.py input.json`
+Process the `input.json` file that is in the current directory, and write the output to 
+a new file named `results.json` in the same directory. Notice the last point indicating that the OUTPUT_DIRECTORY should be the current directory:\
+`python bin/extract_beacons_vectors.py input.json .`
 
-Process the `input.json` file that is in the current directory, and write the output to a new file named `results.json` in the directory `/home/user/`:\
-`python main.py -o /home/user/ input.json`
-
-In the same folder, will be created an output JSON file named as `results.json` with the expected output
+Process the `input.json` file that is in the current directory, and write the output to 
+a new file named `results.json` in the directory `/home/userX/`:\
+`python bin/extract_beacons_vectors.py input.json /home/userX/`
