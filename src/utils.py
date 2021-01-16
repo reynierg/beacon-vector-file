@@ -27,10 +27,16 @@ def init_argparse() -> argparse.ArgumentParser:
         arguments parser to be used to process command line arguments
     """
 
-    logging.debug("init_argparse()")
     parser = argparse.ArgumentParser(
         description="Parse an input JSON file and create an output JSON file, with "
         "the corresponding results"
+    )
+
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+        help='be verbose'
     )
 
     parser.add_argument(

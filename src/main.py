@@ -19,20 +19,22 @@ from src import utils
 
 def main() -> None:
     """Program entrypoint"""
-    if constants.LOG_LEVEL == logging.DEBUG:
+    parser = utils.init_argparse()
+    args = parser.parse_args()
+    # Configure logger:
+    if args.verbose:
         logging.basicConfig(
             format=constants.DEBUG_MESSAGE_FORMAT,
-            level=constants.LOG_LEVEL,
+            level=logging.DEBUG,
             datefmt=constants.DATE_FORMAT,
         )
     else:
         logging.basicConfig(
-            format=constants.INFO_MESSAGE_FORMAT, level=constants.LOG_LEVEL
+            format=constants.INFO_MESSAGE_FORMAT,
+            level=logging.INFO
         )
 
     logging.debug("main()")
-    parser = utils.init_argparse()
-    args = parser.parse_args()
     input_file_path = utils.validate_input_file_path(args)
     if not input_file_path:
         sys.exit()

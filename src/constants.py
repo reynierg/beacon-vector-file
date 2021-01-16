@@ -1,9 +1,6 @@
 """Defines different constants being used in the project
 """
 
-import logging
-
-LOG_LEVEL = logging.INFO
 INFO_MESSAGE_FORMAT = "%(message)s"
 DEBUG_MESSAGE_FORMAT = "%(levelname)s|%(filename)s:%(lineno)s|%(asctime)s|%(message)s"
 DATE_FORMAT = "%H:%M:%S"

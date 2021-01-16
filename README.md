@@ -153,13 +153,20 @@ In the same terminal where were executed the previous commands, execute the foll
 `python bin/extract_beacons_vectors.py [OPTIONS] <INPUT_FILE_PATH> <OUTPUT_DIRECTORY>`
 
 # OPTIONS
-    -h, --help                  show this help text and exit
+    -h, --help                  Shows the help text and exit
+    -v, --verbose               Display verbose information about the proram execution
 
 # EXAMPLES
 Process the `input.json` file that is in the current directory, and write the output to 
-a new file named `results.json` in the same directory. Notice the last point indicating that the OUTPUT_DIRECTORY should be the current directory:\
+a new file named `results.json` in the same directory. Notice the last point indicating 
+that the OUTPUT_DIRECTORY should be the current directory:\
 `python bin/extract_beacons_vectors.py input.json .`
 
 Process the `input.json` file that is in the current directory, and write the output to 
 a new file named `results.json` in the directory `/home/userX/`:\
 `python bin/extract_beacons_vectors.py input.json /home/userX/`
+
+Process the `input.json` file that is in the current directory, and write the output to 
+a new file named `results.json` in the directory `/home/userX/`. Display debug 
+information:\
+`python bin/extract_beacons_vectors.py -v input.json /home/userX/`
