@@ -6,16 +6,19 @@ This file can be imported as a module and contains the following functions:
 
     * init_argparse() - initialize an ArgParser with the allowed arguments, and
     description message
+    * config_logger(args_namespace) - Configures the global logger
     * validate_input_file_path(args) - verifies that the input file path is valid, and
     that the user has read permission on it
     * validate_output_directory_path(args) - verifies that the output directory is
-    valid, and that the user has write permission to it.
+    valid, and that the user has write permission to it
 """
 
 import argparse
 import logging
 import os
 import typing
+
+from src import constants
 
 
 def init_argparse() -> argparse.ArgumentParser:
@@ -32,12 +35,7 @@ def init_argparse() -> argparse.ArgumentParser:
         "the corresponding results"
     )
 
-    parser.add_argument(
-        '-v',
-        '--verbose',
-        action='store_true',
-        help='be verbose'
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="be verbose")
 
     parser.add_argument(
         "input_file_path",
@@ -55,6 +53,27 @@ def init_argparse() -> argparse.ArgumentParser:
     )
 
     return parser
+
+
+def config_logger(args_namespace: argparse.Namespace) -> None:
+    """Configures the global logger
+
+    Parameters
+    ----------
+    args_namespace : argparse.Namespace
+        contains the user supplied command line arguments
+    """
+
+    if args_namespace.verbose:
+        logging.basicConfig(
+            format=constants.DEBUG_MESSAGE_FORMAT,
+            level=logging.DEBUG,
+            datefmt=constants.DATE_FORMAT,
+        )
+    else:
+        logging.basicConfig(format=constants.INFO_MESSAGE_FORMAT, level=logging.INFO)
+
+    logging.info("The logger was successfully configured")
 
 
 def validate_input_file_path(args: argparse.Namespace) -> typing.Optional[str]:

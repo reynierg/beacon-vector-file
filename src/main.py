@@ -22,18 +22,7 @@ def main() -> None:
     parser = utils.init_argparse()
     args = parser.parse_args()
     # Configure logger:
-    if args.verbose:
-        logging.basicConfig(
-            format=constants.DEBUG_MESSAGE_FORMAT,
-            level=logging.DEBUG,
-            datefmt=constants.DATE_FORMAT,
-        )
-    else:
-        logging.basicConfig(
-            format=constants.INFO_MESSAGE_FORMAT,
-            level=logging.INFO
-        )
-
+    utils.config_logger(args)
     logging.debug("main()")
     input_file_path = utils.validate_input_file_path(args)
     if not input_file_path:
