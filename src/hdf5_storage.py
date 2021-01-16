@@ -1,7 +1,16 @@
+"""Contains logic to store in a HDF5 file format every beacon
+
+Every beacon is stored with its associated vector of dbm_ant values
+
+This file can be imported as a module and contains the following classes:
+    * HDF5Storage - provides storage and retrieval of the beacons data in a HDF5 file
+"""
+
 import json
 import logging
 import os
 import tempfile
+import types
 import typing
 
 import h5py
@@ -12,11 +21,31 @@ from src.output_processor import OutputProcessor
 
 
 class HDF5Storage:
+    """A class used for the storage and retrieval of the beacons data in a HDF5 file
+
+    Attributes
+    ----------
+    ANTENNA_ID_DBM_MAP_GROUP_NAME : str
+        a string to be used as a HDF5's group name, for a Group where will be stored
+        for every beacon's antenna, its id and associated dbm_ant value.
+
+    SAMPLED_ANTENNAS_COUNT_ATTR_NAME: str
+        a string to be used as a name, for the attribute of an existent
+        hdf5_antenna_id_dbm_group, for keep track of how many antennas has been stored
+        for a beacon.
+    """
+
     ANTENNA_ID_DBM_MAP_GROUP_NAME = "antenna_id_dbm_map"
     SAMPLED_ANTENNAS_COUNT_ATTR_NAME = "sampled_antennas_count"
 
     def __enter__(self) -> "HDF5Storage":
-        """Context Manager to ensure the close of the opened files"""
+        """Context Manager to ensure the closure of open files
+
+        Returns
+        -------
+        HDF5Storage:
+            the instance of the HDF5Storage being used as a context manager
+        """
 
         logging.debug("%s.__enter__()", self.__class__.__name__)
         try:
@@ -42,16 +71,35 @@ class HDF5Storage:
         except Exception:
             logging.exception("Error:")
 
-    def __exit__(self, exc_type: Exception, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: typing.Optional[typing.Type[BaseException]],
+        exc_val: typing.Optional[BaseException],
+        exc_tb: typing.Optional[types.TracebackType],
+    ) -> typing.Optional[bool]:
         """Closes the used files
 
-        Close the HDF5 file backed by the the temp file, as well as the results JSON
+        Closes the HDF5 file backed by the the temp file, as well as the results JSON
         file.
-        :param exc_type:
-        :param exc_val:
-        :param exc_tb:
-        :return:
+
+        Parameters
+        ----------
+        exc_type : typing.Optional[typing.Type[BaseException]]
+            Type of the exception that caused the context to be exited
+        exc_val : typing.Optional[BaseException]
+            The exception that caused the context to be exited
+        exc_tb : typing.Optional[types.TracebackType]
+            Traceback related to the call stack associated to the exception
+
+        Returns
+        -------
+        typing.Optional[bool]:
+            If an exception is supplied, and the method wishes to suppress the
+            exception (i.e., prevent it from being propagated), it should return a true
+            value. Otherwise, the exception will be processed normally upon exit from
+            this method.
         """
+
         logging.debug(
             "%s.__exit__(exc_type=%s, exc_val=%s, exc_tb=%s)",
             self.__class__.__name__,
@@ -70,6 +118,8 @@ class HDF5Storage:
         except Exception:
             logging.exception("Error:")
 
+        return False
+
     def __init__(
         self,
         input_json_file_path: str,
@@ -77,13 +127,30 @@ class HDF5Storage:
         default_dbm_ant_value: int,
         expected_antenna_ids: typing.List[int],
     ):
+        """
+        Parameters
+        ----------
+        input_json_file_path : str
+            The full file path of the input JSON file to process
+        out_processor : OutputProcessor
+            Handles the storage of a record, that contains a beacon's associated
+            antennas dbm_values
+        default_dbm_ant_value : int
+            Default value to be used as dbm_ant reading associated to an antenna id,
+            when in the input file, was not found the corresponding dbm_ant for an
+            antenna of a beacon.
+        expected_antenna_ids : typing.List[int]
+            Contains the list of antennas ids, for which should be found in the input
+            file, the corresponding readings for its dbm_ant value.
+        """
+
         logging.debug(
             "%s.__init__(input_json_file_path=%s, default_dbm_ant_value=%s, "
             "expected_antenna_ids=%s)",
             self.__class__.__name__,
             input_json_file_path,
             default_dbm_ant_value,
-            expected_antenna_ids
+            expected_antenna_ids,
         )
 
         self._input_json_file_path: str = input_json_file_path
@@ -106,17 +173,41 @@ class HDF5Storage:
         beacon_key: str,
         json_record: typing.Optional[JSONDocumentModel] = None,
     ) -> typing.Dict[str, typing.Union[str, typing.List[float]]]:
-        """
-        Builds a result record to be saved in the output JSON file.
+        """Builds a result record to be saved in the output JSON file.
 
-        It extract from the HDF5 file, all the ant_id, dbm_ant pairs associated to the
+        It extracts from the HDF5 file, all the ant_id, dbm_ant pairs associated to the
         sub-group referenced by `hdf5_antenna_id_dbm_group`, where the ant_id match a
         value in the constants.ANTENNA_IDS list. The dbm_ant associated is used to
         construct the beacon's dbm_ant vector.
-        :param hdf5_antenna_id_dbm_group:
-        :param beacon_key:
-        :param json_record:
-        :return:
+
+        Parameters
+        ----------
+        hdf5_antenna_id_dbm_group: h5py.Group
+            Reference to a Group that contains for a beacon, the antennas ids with its
+            associated dbm_ant readings.
+        beacon_key : str
+            Contains a value that identifies a beacon. It's associated with the "beacon"
+            key in a generated beacon record.
+        json_record : typing.Optional[JSONDocumentModel]
+            When not None, will reference a model object with a record's data, parsed
+            from the input file.
+
+        Returns
+        -------
+        typing.Dict[str, typing.Union[str, typing.List[float]]]
+            a dict wit a beacon_key and its associated vector of dbm_and reading.
+            Example:
+            {
+                "beacon": "101, 1999-06-17T00:11:00.000Z",
+                "vector": [
+                    -77.80792406374334,
+                    -135,
+                    -68.74636830519334,
+                    -135,
+                    -19.698948991976884,
+                    -53.139973206690684
+                ]
+            }
         """
 
         logging.debug("%s._build_results_record(...)", self.__class__.__name__)
@@ -161,17 +252,25 @@ class HDF5Storage:
 
         Extracts from the JSON document, the ant_id and dbm_ant, and persist them as a
         key-value pair in the sub-group referenced by `hdf5_antenna_id_dbm_group`. It
-        will also update/create an attribute being used for track the count of
-        antennas that have been already processed:
-        :param hdf5_antenna_id_dbm_group:
-        :param json_record:
-        :param already_sampled_antennas_count:
-        :return:
+        will also update/create an attribute associated to the
+        `hdf5_antenna_id_dbm_group`, being used for track the count of antennas that
+        have been already processed:
+
+        Parameters
+        ----------
+        hdf5_antenna_id_dbm_group : h5py.Group
+            Reference to a Group that contains for a beacon, the antennas ids with its
+            associated dbm_ant readings.
+        json_record : JSONDocumentModel
+            Reference to a model object with a record's data, parsed from the input
+            file.
+        already_sampled_antennas_count : int
+            Contains the number of antennas for which its associated dbm value, has
+            been already stored in the corresponding hdf5_antenna_id_dbm_group.
         """
 
         logging.debug(
-            "%s._persist_antenna_id_and_dbm_value_in_hdf5(...)",
-            self.__class__.__name__
+            "%s._persist_antenna_id_and_dbm_value_in_hdf5(...)", self.__class__.__name__
         )
         ant_id = str(json_record.ant_id).encode("utf-8")
         logging.debug(
@@ -202,6 +301,26 @@ class HDF5Storage:
         beacon_key: str,
         json_record: JSONDocumentModel,
     ) -> None:
+        """It process a json_record associated to a beacon.
+
+        Depending on if it is or not, for the beacon the reading of dbm_ant for the
+        last of its antennas that was pending; either an output record will be created
+        and hand over to the output processor, or the reading will be stored in the
+        corresponding hdf5_antenna_id_dbm_group associated to the beacon_key in the
+        file in HDF5 format
+
+        Parameters
+        ----------
+        hdf5_antenna_id_dbm_group : h5py.Group
+            Reference to a Group that contains for a beacon, the antennas ids with its
+            associated dbm_ant readings.
+        beacon_key : str
+            Contains a value that identifies a beacon. It's associated with the "beacon"
+            key in a generated beacon record.
+        json_record : JSONDocumentModel
+            Reference to a model object with a record's data, parsed from the input
+            file.
+        """
 
         logging.debug(
             "%s._process_antennas_samples_statistics(...)", self.__class__.__name__
@@ -211,8 +330,7 @@ class HDF5Storage:
             or 0
         )
         logging.debug(
-            "already_sampled_antennas_count: %s",
-            already_sampled_antennas_count
+            "already_sampled_antennas_count: %s", already_sampled_antennas_count
         )
         if already_sampled_antennas_count + 1 == len(self._expected_antenna_ids):
             # This is the last expected sampled antenna for this beacon in the
@@ -251,10 +369,14 @@ class HDF5Storage:
         scientific datasets. Here will be used for store data related to the huge JSON
         file being processed.
 
-        It required, it will create a new beacon Group and an associated
-        antenna_id_dbm sub-group
-        :param json_record:
-        :return:
+        If required, it will create a new beacon Group and an associated antenna_id_dbm
+        sub-group.
+
+        Parameters
+        ----------
+        json_record : JSONDocumentModel
+            Reference to a model object with a record's data, parsed from the input
+            file.
         """
 
         logging.debug("%s._process_json_record(...)", self.__class__.__name__)
@@ -334,7 +456,6 @@ class HDF5Storage:
         """Extract beacons vectors from the HDF5 file.
 
         The extracted beacons vectors will be persisted in the JSON results file
-        :return:
         """
 
         logging.debug(
@@ -383,10 +504,7 @@ class HDF5Storage:
             del hdf5_beacon_group
 
     def parse_json_documents_from_file(self) -> None:
-        """
-        Reads one line at a time from the input JSON file, and process it.
-        :return:
-        """
+        """Reads one line at a time from the input JSON file, and process it."""
 
         logging.debug("%s.parse_json_documents_from_file()", self.__class__.__name__)
         # The JSON file could be huge, so it must be parsed one line at a time, for
@@ -399,14 +517,14 @@ class HDF5Storage:
                 logging.debug("Line '%s''s content after strip spaces:", line_index)
                 logging.debug(line)
 
-                if not len(line) or line == os.linesep:
+                if not line or line == os.linesep:
                     logging.warning(
                         "Line '%s' is empty, it will be ignored", line_index
                     )
                     line_index += 1
                     continue
 
-                if line == "]" or line == f"]{os.linesep}":
+                if line in ("]", f"]{os.linesep}"):
                     logging.debug(
                         "The end of the file was found at line #'%s'", line_index
                     )
@@ -416,7 +534,7 @@ class HDF5Storage:
                     )
                     break
 
-                if line == "[" or line == f"[{os.linesep}":
+                if line in ("[", f"[{os.linesep}"):
                     logging.debug(
                         "The first line of the file was found at line #'%s'", line_index
                     )
@@ -450,8 +568,9 @@ class HDF5Storage:
                 # the '}' character, at the end
                 # of the line:
                 line = line[: close_brace_idx + 1]
-                json_document: typing.Optional[JSONDocumentModel] = \
-                    self.parse_text_line(line, line_index)
+                json_document: typing.Optional[
+                    JSONDocumentModel
+                ] = self.parse_text_line(line, line_index)
                 line_index += 1
                 if json_document is None:
                     # Line doesn't contains a valid JSON document:
@@ -464,6 +583,26 @@ class HDF5Storage:
     def parse_text_line(
         self, line: str, line_index: int
     ) -> typing.Optional[JSONDocumentModel]:
+        """Tries to parse from a string a beacon input record.
+
+        It will first try to load a JSON document from the string, and then initialize
+        a JSONDocumentModel with it.
+
+        Parameters
+        ----------
+        line : str
+            A string line that should contains a JSON document with a beacon data
+        line_index : int
+            Represents the base 0 index, of the string line in the input file
+
+        Returns
+        -------
+        typing.Optional[JSONDocumentModel]
+            If from the line could be loaded a JSON document and contains the expected
+            fields, will be returned a JSONDocumentModel instance with the data.
+            If not, None will be returned.
+        """
+
         logging.debug("%s.parse_text_line(...)", self.__class__.__name__)
         try:
             # Deserialize a text line containing a JSON document, to a Python dict:

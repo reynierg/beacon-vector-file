@@ -1,3 +1,17 @@
+"""Provides functionality for initialize the arguments parser being used, for validate
+that the provided input file is accessible and for validate that the output directory
+specified by the user is valid and that the user has write permission to it.
+
+This file can be imported as a module and contains the following functions:
+
+    * init_argparse() - initialize an ArgParser with the allowed arguments, and
+    description message
+    * validate_input_file_path(args) - verifies that the input file path is valid, and
+    that the user has read permission on it
+    * validate_output_directory_path(args) - verifies that the output directory is
+    valid, and that the user has write permission to it.
+"""
+
 import argparse
 import logging
 import os
@@ -5,6 +19,14 @@ import typing
 
 
 def init_argparse() -> argparse.ArgumentParser:
+    """Initialize an arguments parser, to parse the command line's arguments
+
+    Returns
+    -------
+    argparse.ArgumentParser
+        arguments parser to be used to process command line arguments
+    """
+
     logging.debug("init_argparse()")
     parser = argparse.ArgumentParser(
         description="Parse an input JSON file and create an output JSON file, with "
@@ -30,6 +52,21 @@ def init_argparse() -> argparse.ArgumentParser:
 
 
 def validate_input_file_path(args: argparse.Namespace) -> typing.Optional[str]:
+    """Verifies if the input file path is valid.
+
+    Also will verify if user has read permission on it
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Reference to an object that have the user provided command line arguments
+
+    Returns
+    -------
+    str
+        The absolut file path of the input file path supplied by the user
+    """
+
     logging.debug("validate_input_file_path(args=%s)", args)
     input_file_path = args.input_file_path
     if not os.path.exists(input_file_path):
@@ -51,6 +88,21 @@ def validate_input_file_path(args: argparse.Namespace) -> typing.Optional[str]:
 
 
 def validate_output_directory_path(args: argparse.Namespace) -> typing.Optional[str]:
+    """Verifies if the output directory path is valid.
+
+    Also will verify if user has write permission on it
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Reference to an object that have the user provided command line arguments
+
+    Returns
+    -------
+    str
+        The absolut directory path of the input directory path supplied by the user
+    """
+
     logging.debug("validate_output_directory_path(args=%s)", args)
     output_directory_path = args.output_directory
     if not os.path.exists(output_directory_path):

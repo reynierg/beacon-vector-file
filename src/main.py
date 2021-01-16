@@ -1,3 +1,12 @@
+"""beacon-vector-file
+
+This script allows the user to process an input JSON file, to create an output JSON
+file where every beacon is associated with his corresponding vector of dbm_ant values.
+
+This file can also be imported as a module and contains the following functions:
+    * main - the main function of the script
+"""
+
 import logging
 import os
 import sys
@@ -9,6 +18,7 @@ from src import utils
 
 
 def main() -> None:
+    """Program entrypoint"""
     if constants.LOG_LEVEL == logging.DEBUG:
         logging.basicConfig(
             format=constants.DEBUG_MESSAGE_FORMAT,

@@ -1,3 +1,6 @@
+"""Defines different constants being used in the project
+"""
+
 import logging
 
 LOG_LEVEL = logging.INFO
